@@ -1,10 +1,7 @@
 #include "SHA2.h"
 
-bool isBigEnd = isBigEnding();
-bit32 h8[8] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
-0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
-};
-bit32 h64[64] = { 0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
+bool isBigEnd = isBigEndian();
+const bit32 h64[64] = { 0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
@@ -21,6 +18,9 @@ bit32 h64[64] = { 0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
+bit32 h8[8] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
+};
 
 bit32 chunk64[16] = { 0 };  //±£´æĞèÒª¼ÆËãµÄ64×Ö½Ú¿é£¬Ã¿´Î¼ÆËãÇ°¶¼»á±»¸üĞÂ£¬¼ÆËãÍê²»¸Ä±äÆäÄÚÈİ£¬Ä¬ÈÏÒÔ4×Ö½Ú³¤¶È·ÃÎÊ
 bit32 chunk256[64] = { 0 };  //±£´æ64×Ö½Ú¿é±»Ìî³äµ½256×Ö½ÚºóµÄ½á¹û£¬Ò»ÑùÃ¿´Î¼ÆËãÇ°¸üĞÂ£¬¼ÆËãÍêÄÚÈİ²»±ä£¬Ä¬ÈÏÒÔ4×Ö½Ú³¤¶È·ÃÎÊ
@@ -30,7 +30,7 @@ bit32 temph8[8] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,  //±£´æÃ¿´Î¼
 char result256[65] = { '0' };  //ÒÔ64×Ö½Ú×Ö·û´®¸ñÊ½±£´æsha256¼ÆËãÍê³ÉºóµÄ½á¹û(Ê®Áù½øÖÆ)
 
 
-bool isBigEnding() {  // ÅĞ¶Ïµ±Ç°ÔËĞĞ»·¾³ÊÇ·ñÎª´ó¶Ë
+bool isBigEndian() {  // ÅĞ¶Ïµ±Ç°ÔËĞĞ»·¾³ÊÇ·ñÎª´ó¶Ë
 	bit32 num = 0x00000011;
 	Byte* p = (Byte*)&num;
 	if (*p == 0x11) {
@@ -69,20 +69,10 @@ struct hex2char ByteToHexChar(Byte num) {  // ½«ByteÀàĞÍ×ª»»ÎªÁ½¸öÊ®Áù½øÖÆ×Ö·û£¬
 	return temp;
 }
 
-bit32 func1(int i) {  //¹Ì¶¨µÄ²Ù×÷º¯Êı1
-	bit32 s1 = crs(temph8[4], 6) ^ crs(temph8[4], 11) ^ crs(temph8[4], 25);
-	bit32 ch = (temph8[4] & temph8[5]) ^ (~temph8[4] & temph8[6]);
-	return temph8[7] + s1 + ch + h64[i] + chunk256[i];
-}
 
-bit32 func2() {  //¹Ì¶¨µÄ²Ù×÷º¯Êı2
-	bit32 s0 = crs(temph8[0], 2) ^ crs(temph8[0], 13) ^ crs(temph8[0], 22);
-	bit32 maj = (temph8[0] & temph8[1]) ^ (temph8[0] & temph8[2]) ^ (temph8[1] & temph8[2]);
-	return s0 + maj;
-}
-
-void convert64to256() {  // ½«64×Ö½ÚµÄÏûÏ¢À©³äµ½256×Ö½Ú
-	for (short i = 0; i < 16; i++) {
+void HashSingle64(bool isDebug) {
+	if (isDebug) { printHexFromArry(chunk64, 16); }
+	for (short i = 0; i < 16; i++) {  // ½«64×Ö½ÚµÄÏûÏ¢À©³äµ½256×Ö½Ú
 		chunk256[i] = chunk64[i];  //Ç°64×Ö½ÚÖ±½Ó¸´ÖÆ
 	}
 	for (short j = 16; j < 64; j++) {  //Ñ­»·Ìî³ä4×Ö½Ú
@@ -94,22 +84,31 @@ void convert64to256() {  // ½«64×Ö½ÚµÄÏûÏ¢À©³äµ½256×Ö½Ú
 		s1 = crs(s1, 17) ^ crs(s1, 19) ^ (s1 >> 10);
 		chunk256[j] = s0 + s1 + s2 + s3;
 	}
-}
 
-void Hash64() {  //µ¥ÂÖ64´ÎÑ­»·£¬½á¹û±£´æÓÚÈ«¾Ötemph8Êı×é
-	for (int i = 0; i < 64; i++) {
-		bit32 cacheFunc1 = func1(i);
+	for (int i = 0; i < 64; i++) {  //64´ÎÑ­»·£¬½á¹û±£´æÓÚÈ«¾Ötemph8Êı×é
+		bit32 s1 = crs(temph8[4], 6) ^ crs(temph8[4], 11) ^ crs(temph8[4], 25);
+		bit32 ch = (temph8[4] & temph8[5]) ^ (~temph8[4] & temph8[6]);
+		bit32 cacheFunc1 = temph8[7] + s1 + ch + h64[i] + chunk256[i];
+		bit32 s0 = crs(temph8[0], 2) ^ crs(temph8[0], 13) ^ crs(temph8[0], 22);
+		bit32 maj = (temph8[0] & temph8[1]) ^ (temph8[0] & temph8[2]) ^ (temph8[1] & temph8[2]);
+
 		temph8[3] += cacheFunc1;
-		temph8[7] = cacheFunc1 + func2();
+		temph8[7] = cacheFunc1 + s0 + maj;
 		bit32 temph7 = temph8[7];
 		for (int h = 7; h > 0; h--) {
 			temph8[h] = temph8[h - 1];
 		}
 		temph8[0] = temph7;
 	}
+	for (short i = 0; i < 8; i++) {  //´¦Àíh8¹şÏ£ÖµÊı×é
+		h8[i] += temph8[i];
+		temph8[i] = h8[i];
+	}
 }
 
-void h8ToStr() {
+
+
+void h8ToStr() { //½«¼ÆËãºóµÄ½á¹û£¬¼´h8ÖĞ´æ´¢µÄ¹şÏ£Öµ×ª»»Îª×Ö·û´®ĞÎÊ½£¬²¢´æ´¢ÔÚresult256ÖĞ£¬,²¢Ë¢ĞÂh8ºÍtemph8Îª³õÊ¼³£Á¿Öµ
 	if (isBigEnd) {
 		struct hex2char h = { 0, 0 };
 		Byte* resultBegin = (Byte*)temph8;
@@ -121,7 +120,7 @@ void h8ToStr() {
 		result256[64] = '\0';
 	}
 	else {
-		struct hex2char h = { 0, 0 };  //½«¼ÆËãºóµÄ½á¹û£¬¼´h8ÖĞ´æ´¢µÄ¹şÏ£Öµ×ª»»Îª×Ö·û´®ĞÎÊ½£¬²¢´æ´¢ÔÚresult256ÖĞ
+		struct hex2char h = { 0, 0 }; 
 		Byte* resultBegin = (Byte*)temph8;
 		for (short bc = 0; bc < 8; bc++) {
 			h = ByteToHexChar(*(resultBegin + bc * 4 + 3));
@@ -152,9 +151,9 @@ void h8ToStr() {
 	}
 }
 
-char* HashStr(const char* message, int algorithm, bool isDebug, bit64 flaglengthb, bit64 flaglength) {
-	bit64 length = 0;
-	bit64 length8 = 0;
+char* HashStr(const char* message, int algorithm, bool isDebug, bit64 flaglengthb, bit64 flaglength) {  //ÕâÀïµÄ×îºóÁ½¸ö²ÎÊıÊÇÓÃÓÚ¼ÆËãÎÄ¼ş¹şÏ£Ê±µ÷ÓÃ±¾º¯ÊıÊ±Ê¹ÓÃµÄ 
+	bit64 length = 0;               //isDebugÎªtrueÊ±»áÔÚÖ´ĞĞ¹ı³ÌÖĞ´òÓ¡³öÃ¿¸ö×Ö½Ú¿é
+	bit64 length8 = 0;              
 	bit64 howMany64 = 0;  //ÓĞ¶àÉÙ¸öÕû64×Ö½Ú¿é
 	if (flaglengthb == 0) {
 		while (true) {
@@ -182,13 +181,8 @@ char* HashStr(const char* message, int algorithm, bool isDebug, bit64 flaglength
 			for (bit64 c = 0; c < 64; c++) {  //µ¥¸ö64×Ö½Ú¿é»ñÈ¡
 				*(begin64 + c) = *(message + 64*operate+c);
 			}
-			if (isDebug) { printHexFromArry(chunk64, 16); }
-			convert64to256();  //À©³äµ½256×Ö½Ú
-			Hash64();  //µ¥ÂÖ64´ÎÑ­»·¼ÆËã
-			for (short i = 0; i < 8; i++) {  //´¦Àíh8Êı×é
-				h8[i] += temph8[i];
-				temph8[i] = h8[i];
-			}
+			HashSingle64(isDebug);
+
 		}
 		bit64 frontLength = 64 * howMany64;
 		bit64 surplus = length - frontLength;
@@ -206,13 +200,9 @@ char* HashStr(const char* message, int algorithm, bool isDebug, bit64 flaglength
 				for (bit64 l = 56; l < 64; l++) {
 					*(begin64 + l) = *(len8 + l - 56);
 				}
-				if (isDebug) { printHexFromArry(chunk64, 16); }
-				convert64to256();  //À©³äµ½256×Ö½Ú
-				Hash64();  //µ¥ÂÖ64´ÎÑ­»·¼ÆËã
-				for (short i = 0; i < 8; i++) {  //´¦Àíh8Êı×é
-					h8[i] += temph8[i];
-					temph8[i] = h8[i];
-				}
+
+				HashSingle64(isDebug);
+
 			}
 			else {
 				for (bit64 s = 0; s < surplus; s++) {  //µ¥¸ö64×Ö½Ú¿é»ñÈ¡
@@ -222,13 +212,8 @@ char* HashStr(const char* message, int algorithm, bool isDebug, bit64 flaglength
 				for (bit64 z = surplus + 1; z < 64; z++) {
 					*(begin64 + surplus) = 0x00;
 				}
-				if (isDebug) { printHexFromArry(chunk64, 16); }
-				convert64to256();  //À©³äµ½256×Ö½Ú
-				Hash64();  //µ¥ÂÖ64´ÎÑ­»·¼ÆËã
-				for (short i = 0; i < 8; i++) {  //´¦Àíh8Êı×é
-					h8[i] += temph8[i];
-					temph8[i] = h8[i];
-				}
+				HashSingle64(isDebug);
+
 				for (bit64 t = 0; t < 14; t++) {
 					chunk64[t] = 0x00000000;
 				}
@@ -237,13 +222,8 @@ char* HashStr(const char* message, int algorithm, bool isDebug, bit64 flaglength
 				for (bit64 l = 56; l < 64; l++) {
 					*(begin64 + l) = *(len8 + l - 56);
 				}
-				if (isDebug) { printHexFromArry(chunk64, 16); }
-				convert64to256();  //À©³äµ½256×Ö½Ú
-				Hash64();  //µ¥ÂÖ64´ÎÑ­»·¼ÆËã
-				for (short i = 0; i < 8; i++) {  //´¦Àíh8Êı×é
-					h8[i] += temph8[i];
-					temph8[i] = h8[i];
-				}
+				HashSingle64(isDebug);
+
 			}
 		}
 		else {
@@ -260,13 +240,8 @@ char* HashStr(const char* message, int algorithm, bool isDebug, bit64 flaglength
 				*(begin64 + l) = *(len8 + l - 56);
 			}
 
-			if (isDebug) { printHexFromArry(chunk64, 16); }
-			convert64to256();  //À©³äµ½256×Ö½Ú
-			Hash64();  //µ¥ÂÖ64´ÎÑ­»·¼ÆËã
-			for (short i = 0; i < 8; i++) {  //´¦Àíh8Êı×é
-				h8[i] += temph8[i];
-				temph8[i] = h8[i];
-			}
+			HashSingle64(isDebug);
+
 		}
 		h8ToStr();
 		return result256;
@@ -280,13 +255,8 @@ char* HashStr(const char* message, int algorithm, bool isDebug, bit64 flaglength
 				*(begin64 + c * 4) = *(message + 64 * operate + c * 4 + 3);
 			}
 
-			if (isDebug) { printHexFromArry(chunk64, 16); }
-			convert64to256();  //À©³äµ½256×Ö½Ú
-			Hash64();  //µ¥ÂÖ64´ÎÑ­»·¼ÆËã
-			for (short i = 0; i < 8; i++) {  //Ã¿¸ö64×Ö½Ú¿é¼ÆËã½áÊøºó´¦Àíh8¹şÏ£²¢¸´ÖÆ¸øtemph8£¬¼´µ¥ÂÖ64´ÎÑ­»·¼ÆËãÍê³Éºó¸üĞÂh8¹şÏ£
-				h8[i] += temph8[i];
-				temph8[i] = h8[i];
-			}
+			HashSingle64(isDebug);
+
 		}
 		bit64 frontLength = 64 * howMany64;  //»ñÈ¡Ç°Ãæn¸ö64×Ö½ÚµÄ×Ü³¤¶È£¬ÓÃÓÚÌá¹©»ù´¡Æ«ÖÃ¶ÁÈ¡Ô­Ê¼ÏûÏ¢ÖĞµÄºóÃæ²»×ã64×Ö½ÚµÄÄÚÈİ
 		bit64 surplus = length - frontLength;  //¼ÆËãºóÃæ²»×ã64×Ö½Ú²¿·ÖµÄ³¤¶È
@@ -304,13 +274,8 @@ char* HashStr(const char* message, int algorithm, bool isDebug, bit64 flaglength
 				chunk64[15] = *length4;
 				chunk64[14] = *(length4 + 1);
 
-				if (isDebug) { printHexFromArry(chunk64, 16); }
-				convert64to256();  //À©³äµ½256×Ö½Ú
-				Hash64();  //µ¥ÂÖ64´ÎÑ­»·¼ÆËã
-				for (short i = 0; i < 8; i++) {  //´¦Àíh8Êı×é
-					h8[i] += temph8[i];
-					temph8[i] = h8[i];
-				}
+				HashSingle64(isDebug);
+
 			}
 			else {  //´ËÎª55 < surplus < 64µÄÇé¿ö
 				for (bit64 s = 0; s < surplus4; s++) {  //µ¥¸ö64×Ö½Ú¿é»ñÈ¡
@@ -331,12 +296,8 @@ char* HashStr(const char* message, int algorithm, bool isDebug, bit64 flaglength
 				}
 
 				if (isDebug) { printHexFromArry(chunk64, 16); }
-				convert64to256();  //À©³äµ½256×Ö½Ú
-				Hash64();  //µ¥ÂÖ64´ÎÑ­»·¼ÆËã
-				for (short i = 0; i < 8; i++) {  //´¦Àíh8¹şÏ£ÖµÊı×é
-					h8[i] += temph8[i];
-					temph8[i] = h8[i];
-				}
+				HashSingle64(isDebug);
+
 				for (short i = 0; i < 14; i++) {  //×îºóÒ»¸ö×Ö½Ú¿éÇ°ÃæÈ«²¿Ìî³ä0x00
 					chunk64[i] = 0x00000000;
 				}
@@ -344,13 +305,8 @@ char* HashStr(const char* message, int algorithm, bool isDebug, bit64 flaglength
 				chunk64[15] = *length4;
 				chunk64[14] = *(length4 + 1);
 
-				if (isDebug) { printHexFromArry(chunk64, 16); }
-				convert64to256();  //À©³äµ½256×Ö½Ú
-				Hash64();  //µ¥ÂÖ64´ÎÑ­»·¼ÆËã
-				for (short i = 0; i < 8; i++) {  //´¦Àíh8¹şÏ£ÖµÊı×é
-					h8[i] += temph8[i];
-					temph8[i] = h8[i];
-				}
+				HashSingle64(isDebug);
+
 			}
 		}
 		else {  //´ËÎª0 < length < 55µÄÇé¿ö
@@ -375,13 +331,8 @@ char* HashStr(const char* message, int algorithm, bool isDebug, bit64 flaglength
 			chunk64[15] = *length4;
 			chunk64[14] = *(length4 + 1);
 
-			if (isDebug) { printHexFromArry(chunk64, 16); }
-			convert64to256();  //À©³äµ½256×Ö½Ú
-			Hash64();  //µ¥ÂÖ64´ÎÑ­»·¼ÆËã
-			for (short i = 0; i < 8; i++) {  //´¦Àíh8ÖĞµÄ¹şÏ£Öµ
-				h8[i] += temph8[i];
-				temph8[i] = h8[i];
-			}
+			HashSingle64(isDebug);
+
 		}
 		h8ToStr();
 		return result256;
@@ -390,7 +341,7 @@ char* HashStr(const char* message, int algorithm, bool isDebug, bit64 flaglength
 
 char* HashFile(const char* path, int algorithm, bool isDebug) {
 	std::fstream f(path, std::ios::in | std::ios::binary | std::ios::ate);
-	std::streampos endP = f.tellg();
+	std::streampos endP = f.tellg();  //»ñÈ¡ÎÄ¼ş³¤¶È
 	f.seekg(std::ios::beg);
 	//if (endP >> 61 != 0) {
 	//	std::cerr << "file is too big";
@@ -398,8 +349,8 @@ char* HashFile(const char* path, int algorithm, bool isDebug) {
 	//}
 	bit64 length = endP;  //ÎÄ¼ş×Ü³¤¶È(×Ö½Ú)
 	bit64 howMany64 = length >> 6;  //64×Ö½Ú¿é¸öÊı
-	bit64 length8 = length << 3;  //×ÜÎ»Êı(ĞèÒªÌî³äµÄĞÅÏ¢)
-	bit64 surplus = length - 64 * howMany64;
+	bit64 length8 = length << 3;  //×ÜÎ»Êı(ĞèÒªÌî³äµÄ³¤¶ÈĞÅÏ¢)
+	bit64 surplus = length - 64 * howMany64;  //×îºó²»×ã64×Ö½Ú×Ö½ÚÊı
 	if (surplus == 0) { howMany64--; }
 	Byte* begin64 = (Byte*)chunk64;
 
@@ -413,13 +364,8 @@ char* HashFile(const char* path, int algorithm, bool isDebug) {
 				*(begin64 + i * 4 + 2) = buff[i * 4 + 1];
 				*(begin64 + i * 4 + 3) = buff[i * 4];
 			}
-			//if (isDebug) { printHexFromArry(chunk64, 16); }
-			convert64to256();  //À©³äµ½256×Ö½Ú
-			Hash64();  //µ¥ÂÖ64´ÎÑ­»·¼ÆËã
-			for (short i = 0; i < 8; i++) {  //´¦Àíh8¹şÏ£ÖµÊı×é
-				h8[i] += temph8[i];
-				temph8[i] = h8[i];
-			}
+
+			HashSingle64(isDebug);
 		}
 		if (surplus == 0) {
 			f.read(buff, 64);
@@ -430,13 +376,8 @@ char* HashFile(const char* path, int algorithm, bool isDebug) {
 				*(begin64 + i * 4 + 2) = buff[i * 4 + 1];
 				*(begin64 + i * 4 + 3) = buff[i * 4];
 			}
-			if (isDebug) { printHexFromArry(chunk64, 16); }
-			convert64to256();  //À©³äµ½256×Ö½Ú
-			Hash64();  //µ¥ÂÖ64´ÎÑ­»·¼ÆËã
-			for (short i = 0; i < 8; i++) {  //´¦Àíh8¹şÏ£ÖµÊı×é
-				h8[i] += temph8[i];
-				temph8[i] = h8[i];
-			}
+
+			HashSingle64(isDebug);
 
 			chunk64[0] = 0x80000000;
 			for (short i = 1; i < 14; i++) {
@@ -446,13 +387,7 @@ char* HashFile(const char* path, int algorithm, bool isDebug) {
 			chunk64[15] = *length4;
 			chunk64[14] = *(length4 + 1);
 
-			if (isDebug) { printHexFromArry(chunk64, 16); }
-			convert64to256();  //À©³äµ½256×Ö½Ú
-			Hash64();  //µ¥ÂÖ64´ÎÑ­»·¼ÆËã
-			for (short i = 0; i < 8; i++) {  //´¦Àíh8Êı×é
-				h8[i] += temph8[i];
-				temph8[i] = h8[i];
-			}
+			HashSingle64(isDebug);
 
 			h8ToStr();
 			return result256;
@@ -461,12 +396,10 @@ char* HashFile(const char* path, int algorithm, bool isDebug) {
 			f.read(buff, surplus);
 			f.close();
 			buff[surplus] = '\0';
-			std::cout << surplus << std::endl;
 			return HashStr(buff, 256, isDebug, surplus, length);
 		}
 	}
 }
-
 
 
 void printHexFromArry(bit32* arry, bit64 length) {
