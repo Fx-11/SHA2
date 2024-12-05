@@ -1,7 +1,7 @@
 #ifndef SHA2
 #define SHA2
-#include <fstream>
-#include <string>
+#define _CRT_SECURE_NO_WARNINGS 1
+#include <stdio.h>
 
 
 #define SHA256 256;
@@ -23,7 +23,7 @@ inline bit32 crs(bit32, int);  //循环右移函数
 void HashSingle64();  //计算一个64字节块的哈希
 char* h8ToStr();  //将最后保存的哈希值以十六进制字符串格式保存到result256,并刷新h8和temph8为初始常量值
 char* HashStr(const char*,  int = 256, bit64 = 0, bit64 = 0);  //计算输入字符串的sha256值(以默认编码方式)
-char* HashFile(std::string, int = 256);  //接受文件路径作为参数，计算文件哈希
+char* HashFile(char*, int = 256);  //接受文件路径作为参数，计算文件哈希
 
 
 #endif

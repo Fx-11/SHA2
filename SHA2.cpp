@@ -19,7 +19,7 @@ const bit32 h64[64] = { 0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
-bit32 h0 = 0x6a09e667, temph0 = h0;
+register bit32 h0 = 0x6a09e667, temph0 = h0;
 bit32 h1 = 0xbb67ae85, temph1 = h1;
 bit32 h2 = 0x3c6ef372, temph2 = h2;
 bit32 h3 = 0xa54ff53a, temph3 = h3;
@@ -94,7 +94,7 @@ char* h8ToStr() { //将计算后的结果，即h8中存储的哈希值转换为字符串形式，并存储在
 }
 inline bit32 crs(bit32 original, int bits) {  // 将4字节original循环右移bits位并返回该值
 	bits = bits % 32;
-	return (original>>bits | original<<32-bits);
+	return (original>>bits|original<<32-bits);
 }
 
 
@@ -302,36 +302,115 @@ char* HashStr(const char* message, int algorithm, bit64 flaglengthb, bit64 flagl
 }
 
 
-char* HashFile(std::string path, int algorithm) {
-	std::fstream f(path, std::ios::in | std::ios::binary | std::ios::ate);
-	std::streampos endP = f.tellg();  //获取文件长度
-	f.seekg(std::ios::beg);
+char* HashFile(char* path, int algorithm) {
+	FILE* f = fopen(path, "rb");
+	fseek(f, 0, SEEK_END);
+	bit64 endP = ftell(f);
+	rewind(f);
 	//if (endP >> 61 != 0) {
 	//	std::cerr << "file is too big";
 	//	return nullptr;
 	//}
+	const bit64 howBig = 524288;
+	bit64 i4 = 0;
 	bit64 length = endP;  //文件总长度(字节)
 	bit64 howMany64 = length >> 6;  //64字节块个数
+	bit64 howMany64M = length / howBig;  //64MB有多少个
+	bit64 surplus64k = howMany64 % (howBig/64);
 	bit64 length8 = length << 3;  //总位数(需要填充的长度信息)
 	bit64 surplus = length - 64 * howMany64;  //最后不足64字节字节数
 	if (surplus == 0) { howMany64--; }
 	Byte* begin64 = (Byte*)chunk64;
-
 	char buff[64] = { 0 };
-	for (bit64 i = 0; i < howMany64; i++) {
-		f.read(buff, 64);
-		for (short i = 0; i < 16; i++) {
-			*(begin64 + i * 4) = buff[i * 4 + 3];
-			*(begin64 + i * 4 + 1) = buff[i * 4 + 2];
-			*(begin64 + i * 4 + 2) = buff[i * 4 + 1];
-			*(begin64 + i * 4 + 3) = buff[i * 4];
-		}
 
+	char* buffM = new char[howBig];
+	bit64 cache1 = 0;
+	for (bit64 m = 0; m < howMany64M; m++) {
+		fread(buffM, 1, howBig, f);
+		for (bit64 b = 0; b < howBig/64; b++) {
+			cache1 = 64 * b;
+			*(begin64 + 0) = buffM[cache1 + 3];
+			*(begin64 + 1) = buffM[cache1 + 2];
+			*(begin64 + 2) = buffM[cache1 + 1];
+			*(begin64 + 3) = buffM[cache1 + 0];
+			*(begin64 + 4) = buffM[cache1 + 7];
+			*(begin64 + 5) = buffM[cache1 + 6];
+			*(begin64 + 6) = buffM[cache1 + 5];
+			*(begin64 + 7) = buffM[cache1 + 4];
+			*(begin64 + 8) = buffM[cache1 + 11];
+			*(begin64 + 9) = buffM[cache1 + 10];
+			*(begin64 + 10) = buffM[cache1 + 9];
+			*(begin64 + 11) = buffM[cache1 + 8];
+			*(begin64 + 12) = buffM[cache1 + 15];
+			*(begin64 + 13) = buffM[cache1 + 14];
+			*(begin64 + 14) = buffM[cache1 + 13];
+			*(begin64 + 15) = buffM[cache1 + 12];
+			*(begin64 + 16) = buffM[cache1 + 19];
+			*(begin64 + 17) = buffM[cache1 + 18];
+			*(begin64 + 18) = buffM[cache1 + 17];
+			*(begin64 + 19) = buffM[cache1 + 16];
+			*(begin64 + 20) = buffM[cache1 + 23];
+			*(begin64 + 21) = buffM[cache1 + 22];
+			*(begin64 + 22) = buffM[cache1 + 21];
+			*(begin64 + 23) = buffM[cache1 + 20];
+			*(begin64 + 24) = buffM[cache1 + 27];
+			*(begin64 + 25) = buffM[cache1 + 26];
+			*(begin64 + 26) = buffM[cache1 + 25];
+			*(begin64 + 27) = buffM[cache1 + 24];
+			*(begin64 + 28) = buffM[cache1 + 31];
+			*(begin64 + 29) = buffM[cache1 + 30];
+			*(begin64 + 30) = buffM[cache1 + 29];
+			*(begin64 + 31) = buffM[cache1 + 28];
+			*(begin64 + 32) = buffM[cache1 + 35];
+			*(begin64 + 33) = buffM[cache1 + 34];
+			*(begin64 + 34) = buffM[cache1 + 33];
+			*(begin64 + 35) = buffM[cache1 + 32];
+			*(begin64 + 36) = buffM[cache1 + 39];
+			*(begin64 + 37) = buffM[cache1 + 38];
+			*(begin64 + 38) = buffM[cache1 + 37];
+			*(begin64 + 39) = buffM[cache1 + 36];
+			*(begin64 + 40) = buffM[cache1 + 43];
+			*(begin64 + 41) = buffM[cache1 + 42];
+			*(begin64 + 42) = buffM[cache1 + 41];
+			*(begin64 + 43) = buffM[cache1 + 40];
+			*(begin64 + 44) = buffM[cache1 + 47];
+			*(begin64 + 45) = buffM[cache1 + 46];
+			*(begin64 + 46) = buffM[cache1 + 45];
+			*(begin64 + 47) = buffM[cache1 + 44];
+			*(begin64 + 48) = buffM[cache1 + 51];
+			*(begin64 + 49) = buffM[cache1 + 50];
+			*(begin64 + 50) = buffM[cache1 + 49];
+			*(begin64 + 51) = buffM[cache1 + 48];
+			*(begin64 + 52) = buffM[cache1 + 55];
+			*(begin64 + 53) = buffM[cache1 + 54];
+			*(begin64 + 54) = buffM[cache1 + 53];
+			*(begin64 + 55) = buffM[cache1 + 52];
+			*(begin64 + 56) = buffM[cache1 + 59];
+			*(begin64 + 57) = buffM[cache1 + 58];
+			*(begin64 + 58) = buffM[cache1 + 57];
+			*(begin64 + 59) = buffM[cache1 + 56];
+			*(begin64 + 60) = buffM[cache1 + 63];
+			*(begin64 + 61) = buffM[cache1 + 62];
+			*(begin64 + 62) = buffM[cache1 + 61];
+			*(begin64 + 63) = buffM[cache1 + 60];
+			HashSingle64();
+		}
+	}
+	fread(buffM, 1, surplus64k * 64, f);
+	for (bit64 bk = 0; bk < surplus64k; bk++) {
+		cache1 = 64 * bk;
+		for (bit64 i = 0; i < 16; i++) {
+			i4 = i * 4;
+			*(begin64 + i4) = buffM[cache1 + i4 + 3];
+			*(begin64 + i4 + 1) = buffM[cache1 + i4 + 2];
+			*(begin64 + i4 + 2) = buffM[cache1 + i4 + 1];
+			*(begin64 + i4 + 3) = buffM[cache1 + i4];
+		}
 		HashSingle64();
 	}
 	if (surplus == 0) {
-		f.read(buff, 64);
-		f.close();
+		fread(buff, 1, 64, f);
+		fclose(f);
 		for (short i = 0; i < 16; i++) {
 			*(begin64 + i * 4) = buff[i * 4 + 3];
 			*(begin64 + i * 4 + 1) = buff[i * 4 + 2];
@@ -352,12 +431,14 @@ char* HashFile(std::string path, int algorithm) {
 		HashSingle64();
 
 		h8ToStr();
+		delete[] buffM;
 		return result256;
 	}
 	else {
-		f.read(buff, surplus);
-		f.close();
+		fread(buff, 1, surplus, f);
+		fclose(f);
 		buff[surplus] = '\0';
+		delete[] buffM;
 		return HashStr(buff, 256, surplus, length);
 	}
 }
