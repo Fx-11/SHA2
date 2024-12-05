@@ -19,7 +19,7 @@ const bit32 h64[64] = { 0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
-register bit32 h0 = 0x6a09e667, temph0 = h0;
+bit32 h0 = 0x6a09e667, temph0 = h0;
 bit32 h1 = 0xbb67ae85, temph1 = h1;
 bit32 h2 = 0x3c6ef372, temph2 = h2;
 bit32 h3 = 0xa54ff53a, temph3 = h3;
@@ -27,17 +27,17 @@ bit32 h4 = 0x510e527f, temph4 = h4;
 bit32 h5 = 0x9b05688c, temph5 = h5;
 bit32 h6 = 0x1f83d9ab, temph6 = h6;
 bit32 h7 = 0x5be0cd19, temph7 = h7;
-bit32 chunk64[16] = { 0 };  //±£´æĞèÒª¼ÆËãµÄ64×Ö½Ú¿é£¬Ã¿´Î¼ÆËãÇ°¶¼»á±»¸üĞÂ£¬¼ÆËãÍê²»¸Ä±äÆäÄÚÈİ£¬Ä¬ÈÏÒÔ4×Ö½Ú³¤¶È·ÃÎÊ
-bit32 chunk256[64] = { 0 };  //±£´æ64×Ö½Ú¿é±»Ìî³äµ½256×Ö½ÚºóµÄ½á¹û£¬Ò»ÑùÃ¿´Î¼ÆËãÇ°¸üĞÂ£¬¼ÆËãÍêÄÚÈİ²»±ä£¬Ä¬ÈÏÒÔ4×Ö½Ú³¤¶È·ÃÎÊ
+bit32 chunk64[16] = { 0 };  //      Òª     64 Ö½Ú¿é£¬Ã¿ Î¼   Ç°   á±»   Â£      ê²» Ä±      İ£ Ä¬    4 Ö½Ú³  È·   
+bit32 chunk256[64] = { 0 };  //    64 Ö½Ú¿é±»  äµ½256 Ö½Úº Ä½    Ò»  Ã¿ Î¼   Ç°   Â£          İ²  ä£¬Ä¬    4 Ö½Ú³  È·   
 bit32 h8[8] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 };
-char result256[65] = { '0' };  //ÒÔ64×Ö½Ú×Ö·û´®¸ñÊ½±£´æsha256¼ÆËãÍê³ÉºóµÄ½á¹û(Ê®Áù½øÖÆ)
+char result256[65] = { '0' };  //  64 Ö½  Ö·     Ê½    sha256      Éº Ä½  (Ê®      )
 
 bit32 s0;
 bit32 s1;
 bit32 cacheFunc1;
 short ji;
 
-struct hex2char ByteToHexChar(Byte num) {  // ½«ByteÀàĞÍ×ª»»ÎªÁ½¸öÊ®Áù½øÖÆ×Ö·û£¬·µ»ØÒ»¸ö±£´æÓĞÁ½¸ö×Ö·ûµÄ½á¹¹Ìå
+struct hex2char ByteToHexChar(Byte num) {  //   Byte    ×ª  Îª    Ê®       Ö·       Ò»             Ö·  Ä½á¹¹  
 	Byte front = num >> 4;
 	Byte back = num << 4;
 	back = back >> 4;
@@ -56,7 +56,7 @@ struct hex2char ByteToHexChar(Byte num) {  // ½«ByteÀàĞÍ×ª»»ÎªÁ½¸öÊ®Áù½øÖÆ×Ö·û£¬
 	}
 	return temp;
 }
-char* h8ToStr() { //½«¼ÆËãºóµÄ½á¹û£¬¼´h8ÖĞ´æ´¢µÄ¹şÏ£Öµ×ª»»Îª×Ö·û´®ĞÎÊ½£¬²¢´æ´¢ÔÚresult256ÖĞ£¬,²¢Ë¢ĞÂh8ºÍtemph8Îª³õÊ¼³£Á¿Öµ
+char* h8ToStr() { //       Ä½      h8 Ğ´æ´¢ Ä¹ Ï£Öµ×ª  Îª Ö·     Ê½     æ´¢  result256 Ğ£ ,  Ë¢  h8  temph8Îª  Ê¼    Öµ
 	struct hex2char h = { 0, 0 };
 	h8[0] = h0;
 	h8[1] = h1;
@@ -92,16 +92,16 @@ char* h8ToStr() { //½«¼ÆËãºóµÄ½á¹û£¬¼´h8ÖĞ´æ´¢µÄ¹şÏ£Öµ×ª»»Îª×Ö·û´®ĞÎÊ½£¬²¢´æ´¢ÔÚ
 	h7 = temph7 = 0x5be0cd19;
 	return result256;
 }
-inline bit32 crs(bit32 original, int bits) {  // ½«4×Ö½ÚoriginalÑ­»·ÓÒÒÆbitsÎ»²¢·µ»Ø¸ÃÖµ
+inline bit32 crs(bit32 original, int bits) {  //   4 Ö½ originalÑ­      bitsÎ»     Ø¸ Öµ
 	bits = bits % 32;
 	return (original>>bits|original<<32-bits);
 }
 
 
 void HashSingle64() {
-	chunk256[0] = chunk64[0]; // ½«64×Ö½ÚµÄÏûÏ¢À©³äµ½256×Ö½Ú
-	chunk256[1] = chunk64[1]; // Ç°64×Ö½ÚÖ±½Ó¸´ÖÆ
-	chunk256[2] = chunk64[2]; // Ñ­»·Õ¹¿ª
+	chunk256[0] = chunk64[0]; //   64 Ö½Úµ   Ï¢   äµ½256 Ö½ 
+	chunk256[1] = chunk64[1]; // Ç°64 Ö½ Ö± Ó¸   
+	chunk256[2] = chunk64[2]; // Ñ­  Õ¹  
 	chunk256[3] = chunk64[3];
 	chunk256[4] = chunk64[4];
 	chunk256[5] = chunk64[5];
@@ -115,15 +115,15 @@ void HashSingle64() {
 	chunk256[13] = chunk64[13];
 	chunk256[14] = chunk64[14];
 	chunk256[15] = chunk64[15];
-	for (short j = 16; j < 64; j++) {  //Ñ­»·Ìî³ä4×Ö½Ú
+	for (short j = 16; j < 64; j++) {  //Ñ­     4 Ö½ 
 		s0 = chunk256[j - 15];
 		s1 = chunk256[j - 2];
 		s0 = ((s0 >> 7) | (s0 << 25)) ^ ((s0 >> 18) | (s0 << 14)) ^ (s0 >> 3);
 		s1 = ((s1 >> 17) | (s1 << 15)) ^ ((s1 >> 19) | (s1 << 13)) ^ (s1 >> 10);
 		chunk256[j] = s0 + s1 + chunk256[j - 16] + chunk256[j - 7];
 	}
-	//ÒÔÉÏÎª16¸öËÄ×Ö½ÚÀ©³äµ½64¸öËÄ×Ö½ÚµÄ¹ı³Ì
-	//ÒÔÏÂÎª´¦Àí¼ÆËãh0-h7ÖµµÄ¹ı³Ì
+	//    Îª16     Ö½    äµ½64     Ö½ÚµÄ¹   
+	//    Îª       h0-h7Öµ Ä¹   
 	for (short i = 0; i < 8; i++) {
 		ji = i * 8;
 		//                7          4         4            4          4            4          4              4      5       4      6
@@ -185,10 +185,10 @@ void HashSingle64() {
 	temph7 = h7;
 }
 
-char* HashStr(const char* message, int algorithm, bit64 flaglengthb, bit64 flaglength) {  //ÕâÀïµÄ×îºóÁ½¸ö²ÎÊıÊÇÓÃÓÚ¼ÆËãÎÄ¼ş¹şÏ£Ê±µ÷ÓÃ±¾º¯ÊıÊ±Ê¹ÓÃµÄ 
-	bit64 length = 0;               //isDebugÎªtrueÊ±»áÔÚÖ´ĞĞ¹ı³ÌÖĞ´òÓ¡³öÃ¿¸ö×Ö½Ú¿é
+char* HashStr(const char* message, int algorithm, bit64 flaglengthb, bit64 flaglength) {  //                     Ú¼    Ä¼   Ï£Ê±   Ã±     Ê±Ê¹ Ãµ  
+	bit64 length = 0;               //isDebugÎªtrueÊ±    Ö´ Ğ¹    Ğ´ Ó¡  Ã¿   Ö½Ú¿ 
 	bit64 length8 = 0;              
-	bit64 howMany64 = 0;  //ÓĞ¶àÉÙ¸öÕû64×Ö½Ú¿é
+	bit64 howMany64 = 0;  // Ğ¶  Ù¸   64 Ö½Ú¿ 
 	if (flaglengthb == 0) {
 		while (true) {
 			if (*(message + length) != '\0') {
@@ -206,49 +206,49 @@ char* HashStr(const char* message, int algorithm, bit64 flaglengthb, bit64 flagl
 	}
 
 
-	Byte* begin64 = (Byte*)chunk64;  //½«chunk64°´µ¥×Ö½Ú²Ù×÷
+	Byte* begin64 = (Byte*)chunk64;  //  chunk64     Ö½Ú²   
 	bit32* beginMsg = (bit32*)message;
 
 
-	//ÔÚĞ¡¶Ë»·¾³ÖĞĞèÊ¹Ã¿ËÄ¸ö×Ö½Ú·´×ªÒ»ÏÂ---------------------------------------------Ğ¡Ğ¡Ğ¡----------------------------------------------------
-	for (bit64 operate = 0; operate < howMany64; operate++) {  //Ç°ÃæµÄÕûÊı´Î64×Ö½Ú¿é£¬Îª0Ê±²»Ö´ĞĞ
-		for (bit64 c = 0; c < 16; c++) {  //µ¥¸ö64×Ö½Ú¿é»ñÈ¡
-			*(begin64 + c * 4 + 3) = *(message + 64 * operate + c * 4);  //Ğ¡¶ËÏµÍ³ÖĞµÍÎ»´æ·ÅµÍÎ»×Ö½Ú£¬ÒòÎªĞèÒªÒÔ´ó¶Ë·½Ê½¶ÁÈ¡ºÍ´¦Àí×Ö½Ú¿éÖĞµÄÄÚÈİ
-			*(begin64 + c * 4 + 2) = *(message + 64 * operate + c * 4 + 1);  //ËùÒÔÔÚĞ¡¶ËÏµÍ³ÖĞĞèÒª±£Ö¤µÍÎ»µØÖ·ÖĞµÄÄÚÈİ±»¶ÁÈ¡µ½¸ßÎ»
-			*(begin64 + c * 4 + 1) = *(message + 64 * operate + c * 4 + 2);  //ÔòÍù×Ö½Ú¿éÖĞĞ´Èë×Ö½ÚÊ±ĞèÒª½«4×Ö½ÚÖĞµÄ¸ßÎ»Êı¾İ·Åµ½µÍÎ»µØÖ·´æ´¢
+	//  Ğ¡ Ë»       Ê¹Ã¿ Ä¸  Ö½Ú· ×ªÒ»  ---------------------------------------------Ğ¡Ğ¡Ğ¡----------------------------------------------------
+	for (bit64 operate = 0; operate < howMany64; operate++) {  //Ç°         64 Ö½Ú¿é£¬Îª0Ê±  Ö´  
+		for (bit64 c = 0; c < 16; c++) {  //    64 Ö½Ú¿  È¡
+			*(begin64 + c * 4 + 3) = *(message + 64 * operate + c * 4);  //Ğ¡  ÏµÍ³ Ğµ Î»  Åµ Î» Ö½Ú£   Îª  Òª Ô´ Ë· Ê½  È¡ Í´    Ö½Ú¿  Ğµ     
+			*(begin64 + c * 4 + 2) = *(message + 64 * operate + c * 4 + 1);  //      Ğ¡  ÏµÍ³    Òª  Ö¤  Î»  Ö· Ğµ    İ±   È¡    Î»
+			*(begin64 + c * 4 + 1) = *(message + 64 * operate + c * 4 + 2);  //     Ö½Ú¿   Ğ´   Ö½ Ê±  Òª  4 Ö½  ĞµÄ¸ Î»   İ·Åµ   Î»  Ö· æ´¢
 			*(begin64 + c * 4) = *(message + 64 * operate + c * 4 + 3);
 		}
 
 		HashSingle64();
 
 	}
-	bit64 frontLength = 64 * howMany64;  //»ñÈ¡Ç°Ãæn¸ö64×Ö½ÚµÄ×Ü³¤¶È£¬ÓÃÓÚÌá¹©»ù´¡Æ«ÖÃ¶ÁÈ¡Ô­Ê¼ÏûÏ¢ÖĞµÄºóÃæ²»×ã64×Ö½ÚµÄÄÚÈİ
-	bit64 surplus = length - frontLength;  //¼ÆËãºóÃæ²»×ã64×Ö½Ú²¿·ÖµÄ³¤¶È
-	bit64 surplus4 = surplus >> 2;  //ÒòÎªÔÚĞ¡¶ËÏµÍ³ÖĞ£¬ĞèÒªÃ¿ËÄ¸ö×Ö½ÚËÄ¸ö×Ö½ÚµÄ´¦Àí£¬ËùÒÔ»ñÈ¡Ò»¹²ÓĞ¶àÉÙ¸öÕû4×Ö½Ú
-	bit64 surplusb = surplus - 4 * surplus4;  //nn¸öËÄ×Ö½Úºó»¹ÓĞ¶àÉÙ¸ö×Ö½Ú
+	bit64 frontLength = 64 * howMany64;  //  È¡Ç°  n  64 Ö½Úµ  Ü³  È£      á¹©    Æ« Ã¶ È¡Ô­Ê¼  Ï¢ ĞµÄº  æ²»  64 Ö½Úµ     
+	bit64 surplus = length - frontLength;  //      æ²»  64 Ö½Ú²  ÖµÄ³   
+	bit64 surplus4 = surplus >> 2;  //  Îª  Ğ¡  ÏµÍ³ Ğ£   ÒªÃ¿ Ä¸  Ö½  Ä¸  Ö½ÚµÄ´       Ô» È¡Ò»   Ğ¶  Ù¸   4 Ö½ 
+	bit64 surplusb = surplus - 4 * surplus4;  //nn     Ö½Úº  Ğ¶  Ù¸  Ö½ 
 
-	if (surplus > 55 || surplus == 0) {  //Ê£ÓàµÄ×Ö½Ú·Å²»ÏÂ9¸ö×Ö½ÚÊ±(n==0Ê±¼´Õû¸ömessageÎª64×Ö½ÚµÄÕûÊı±¶£¬´ËÊ±Ö»ĞèÌî³ä0x80ºÍ8×Ö½Ú³¤¶È)
+	if (surplus > 55 || surplus == 0) {  //Ê£    Ö½Ú·Å²   9   Ö½ Ê±(n==0Ê±      messageÎª64 Ö½Úµ           Ê±Ö»     0x80  8 Ö½Ú³   )
 
-		if (surplus == 0) {  //³¤¶ÈÎª64×Ö½ÚÕûÊı±¶Ê±£¬×îºóÒ»¸ö64×Ö½Ú¿é±»Ìî³ä0x8000000 0000...0000 length(8 bits)
+		if (surplus == 0) {  //    Îª64 Ö½       Ê±     Ò»  64 Ö½Ú¿é±»   0x8000000 0000...0000 length(8 bits)
 			chunk64[0] = 0x80000000;
 			for (short i = 1; i < 14; i++) {
 				chunk64[i] = 0x00000000;
 			}
-			bit32* length4 = (bit32*)&length8;  //Ìî³äºó8¸ö×Ö½ÚÎªmessage³¤¶È
+			bit32* length4 = (bit32*)&length8;  //    8   Ö½ Îªmessage    
 			chunk64[15] = *length4;
 			chunk64[14] = *(length4 + 1);
 
 			HashSingle64();
 
 		}
-		else {  //´ËÎª55 < surplus < 64µÄÇé¿ö
-			for (bit64 s = 0; s < surplus4; s++) {  //µ¥¸ö64×Ö½Ú¿é»ñÈ¡
+		else {  //  Îª55 < surplus < 64     
+			for (bit64 s = 0; s < surplus4; s++) {  //    64 Ö½Ú¿  È¡
 				*(begin64 + s * 4 + 3) = *(message + frontLength + s * 4);
 				*(begin64 + s * 4 + 2) = *(message + frontLength + s * 4 + 1);
 				*(begin64 + s * 4 + 1) = *(message + frontLength + s * 4 + 2);
 				*(begin64 + s * 4) = *(message + frontLength + s * 4 + 3);
 			}
-			for (bit64 b = 0; b < surplusb; b++) {  //Ìî³äÊ£ÓàµÄ·Ç4×Ö½ÚÕûµÄÊı¾İ£¬¼°0x80ºÍ0x00
+			for (bit64 b = 0; b < surplusb; b++) {  //   Ê£  Ä· 4 Ö½        İ£   0x80  0x00
 				*(begin64 + surplus4 * 4 + 3 - b) = *(message + length - surplusb + b);
 			}
 			*(begin64 + surplus4 * 4 + 3 - surplusb) = 0x80;
@@ -261,10 +261,10 @@ char* HashStr(const char* message, int algorithm, bit64 flaglengthb, bit64 flagl
 
 			HashSingle64();
 
-			for (short i = 0; i < 14; i++) {  //×îºóÒ»¸ö×Ö½Ú¿éÇ°ÃæÈ«²¿Ìî³ä0x00
+			for (short i = 0; i < 14; i++) {  //   Ò»   Ö½Ú¿ Ç°  È«     0x00
 				chunk64[i] = 0x00000000;
 			}
-			bit32* length4 = (bit32*)&length8;  //Ìî³äºó8¸ö×Ö½ÚÎªmessage³¤¶È
+			bit32* length4 = (bit32*)&length8;  //    8   Ö½ Îªmessage    
 			chunk64[15] = *length4;
 			chunk64[14] = *(length4 + 1);
 
@@ -272,25 +272,25 @@ char* HashStr(const char* message, int algorithm, bit64 flaglengthb, bit64 flagl
 
 		}
 	}
-	else {  //´ËÎª0 < length < 55µÄÇé¿ö
-		for (bit64 s = 0; s < surplus4; s++) {  //Ìî³äÇ°Ãæ4*surplus4×Ö½Ú
+	else {  //  Îª0 < length < 55     
+		for (bit64 s = 0; s < surplus4; s++) {  //   Ç°  4*surplus4 Ö½ 
 			*(begin64 + s * 4 + 3) = *(message + frontLength + s * 4);
 			*(begin64 + s * 4 + 2) = *(message + frontLength + s * 4 + 1);
 			*(begin64 + s * 4 + 1) = *(message + frontLength + s * 4 + 2);
 			*(begin64 + s * 4) = *(message + frontLength + s * 4 + 3);
 		}
-		for (bit64 b = 0; b < surplusb; b++) {  //Ìî³äÊ£ÏÂµÄ²»×ã4×Ö½ÚµÄÄÚÈİºÍ0x00
+		for (bit64 b = 0; b < surplusb; b++) {  //   Ê£ ÂµÄ²   4 Ö½Úµ    İº 0x00
 			*(begin64 + surplus4 * 4 + 3 - b) = *(message + length - surplusb + b);
 		}
 		*(begin64 + surplus4 * 4 + 3 - surplusb) = 0x80;
 		for (bit64 bl = 0; bl < 3 - surplusb; bl++) {
 			*(begin64 + surplus4 * 4 + 2 - surplusb - bl) = 0x00;
 		}
-		for (bit64 z = 4*(surplus4 + 1); z < 56; z++) {  //Ê£ÏÂµÄÌî³ä0x00
+		for (bit64 z = 4*(surplus4 + 1); z < 56; z++) {  //Ê£ Âµ    0x00
 			*(begin64 + z) = 0x00;
 		}
 
-		bit32* length4 = (bit32*)&length8;  //Ìî³äºó8¸ö×Ö½ÚÎªmessage³¤¶È
+		bit32* length4 = (bit32*)&length8;  //    8   Ö½ Îªmessage    
 		chunk64[15] = *length4;
 		chunk64[14] = *(length4 + 1);
 
@@ -313,12 +313,12 @@ char* HashFile(char* path, int algorithm) {
 	//}
 	const bit64 howBig = 524288;
 	bit64 i4 = 0;
-	bit64 length = endP;  //ÎÄ¼ş×Ü³¤¶È(×Ö½Ú)
-	bit64 howMany64 = length >> 6;  //64×Ö½Ú¿é¸öÊı
-	bit64 howMany64M = length / howBig;  //64MBÓĞ¶àÉÙ¸ö
+	bit64 length = endP;  // Ä¼  Ü³   ( Ö½ )
+	bit64 howMany64 = length >> 6;  //64 Ö½Ú¿    
+	bit64 howMany64M = length / howBig;  //64MB Ğ¶  Ù¸ 
 	bit64 surplus64k = howMany64 % (howBig/64);
-	bit64 length8 = length << 3;  //×ÜÎ»Êı(ĞèÒªÌî³äµÄ³¤¶ÈĞÅÏ¢)
-	bit64 surplus = length - 64 * howMany64;  //×îºó²»×ã64×Ö½Ú×Ö½ÚÊı
+	bit64 length8 = length << 3;  //  Î»  (  Òª   Ä³     Ï¢)
+	bit64 surplus = length - 64 * howMany64;  //     64 Ö½  Ö½   
 	if (surplus == 0) { howMany64--; }
 	Byte* begin64 = (Byte*)chunk64;
 	char buff[64] = { 0 };
@@ -424,7 +424,7 @@ char* HashFile(char* path, int algorithm) {
 		for (short i = 1; i < 14; i++) {
 			chunk64[i] = 0x00000000;
 		}
-		bit32* length4 = (bit32*)&length8;  //Ìî³äºó8¸ö×Ö½ÚÎªmessage³¤¶È
+		bit32* length4 = (bit32*)&length8;  //    8   Ö½ Îªmessage    
 		chunk64[15] = *length4;
 		chunk64[14] = *(length4 + 1);
 
