@@ -2,7 +2,8 @@
 
 bit64 count = 0;
 
-const bit32 h64[64] = { 0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
+const bit32 h64[64] = {
+0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
@@ -19,25 +20,22 @@ const bit32 h64[64] = { 0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
-bit32 h0 = 0x6a09e667, temph0 = h0;
-bit32 h1 = 0xbb67ae85, temph1 = h1;
-bit32 h2 = 0x3c6ef372, temph2 = h2;
-bit32 h3 = 0xa54ff53a, temph3 = h3;
-bit32 h4 = 0x510e527f, temph4 = h4;
-bit32 h5 = 0x9b05688c, temph5 = h5;
-bit32 h6 = 0x1f83d9ab, temph6 = h6;
-bit32 h7 = 0x5be0cd19, temph7 = h7;
-bit32 chunk64[16] = { 0 };  //      Òª     64 Ö½Ú¿é£¬Ã¿ Î¼   Ç°   á±»   Â£      ê²» Ä±      Ý£ Ä¬    4 Ö½Ú³  È·   
-bit32 chunk256[64] = { 0 };  //    64 Ö½Ú¿é±»  äµ½256 Ö½Úº Ä½    Ò»  Ã¿ Î¼   Ç°   Â£          Ý²  ä£¬Ä¬    4 Ö½Ú³  È·   
-bit32 h8[8] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 };
-char result256[65] = { '0' };  //  64 Ö½  Ö·     Ê½    sha256      Éº Ä½  (Ê®      )
+bit32 h[8] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 };
+bit32 temph[8] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 };
+
+
+bit32 chunk64[16] = { 0 };  //±£´æÐèÒª¼ÆËãµÄ64×Ö½Ú¿é£¬Ã¿´Î¼ÆËãÇ°¶¼»á±»¸üÐÂ£¬¼ÆËãÍê²»¸Ä±äÆäÄÚÈÝ£¬Ä¬ÈÏÒÔ4×Ö½Ú³¤¶È·ÃÎÊ
+bit32 chunk256[64] = { 0 };  //±£´æ64×Ö½Ú¿é±»Ìî³äµ½256×Ö½ÚºóµÄ½á¹û£¬Ò»ÑùÃ¿´Î¼ÆËãÇ°¸üÐÂ£¬¼ÆËãÍêÄÚÈÝ²»±ä£¬Ä¬ÈÏÒÔ4×Ö½Ú³¤¶È·ÃÎÊ
+char result256[65] = { '0' };  //ÒÔ64×Ö½Ú×Ö·û´®¸ñÊ½±£´æsha256¼ÆËãÍê³ÉºóµÄ½á¹û(Ê®Áù½øÖÆ)
 
 bit32 s0;
 bit32 s1;
 bit32 cacheFunc1;
 short ji;
 
-struct hex2char ByteToHexChar(Byte num) {  //   Byte    ×ª  Îª    Ê®       Ö·       Ò»             Ö·  Ä½á¹¹  
+struct hex2char ByteToHexChar(Byte num) {  // ½«ByteÀàÐÍ×ª»»ÎªÁ½¸öÊ®Áù½øÖÆ×Ö·û£¬·µ»ØÒ»¸ö±£´æÓÐÁ½¸ö×Ö·ûµÄ½á¹¹Ìå
 	Byte front = num >> 4;
 	Byte back = num << 4;
 	back = back >> 4;
@@ -56,139 +54,104 @@ struct hex2char ByteToHexChar(Byte num) {  //   Byte    ×ª  Îª    Ê®       Ö·   
 	}
 	return temp;
 }
-char* h8ToStr() { //       Ä½      h8 Ð´æ´¢ Ä¹ Ï£Öµ×ª  Îª Ö·     Ê½     æ´¢  result256 Ð£ ,  Ë¢  h8  temph8Îª  Ê¼    Öµ
-	struct hex2char h = { 0, 0 };
-	h8[0] = h0;
-	h8[1] = h1;
-	h8[2] = h2;
-	h8[3] = h3;
-	h8[4] = h4;
-	h8[5] = h5;
-	h8[6] = h6;
-	h8[7] = h7;
-	Byte* resultBegin = (Byte*)h8;
+char* h8ToStr() { //½«¼ÆËãºóµÄ½á¹û£¬¼´h8ÖÐ´æ´¢µÄ¹þÏ£Öµ×ª»»Îª×Ö·û´®ÐÎÊ½£¬²¢´æ´¢ÔÚresult256ÖÐ£¬,²¢Ë¢ÐÂh8ºÍtemph8Îª³õÊ¼³£Á¿Öµ
+	struct hex2char hexc = { 0, 0 };
+	Byte* resultBegin = (Byte*)h;
 	for (short bc = 0; bc < 8; bc++) {
-		h = ByteToHexChar(*(resultBegin + bc * 4 + 3));
-		result256[bc * 8] = h.a;
-		result256[bc * 8 + 1] = h.b;
-		h = ByteToHexChar(*(resultBegin + bc * 4 + 2));
-		result256[bc * 8 + 2] = h.a;
-		result256[bc * 8 + 3] = h.b;
-		h = ByteToHexChar(*(resultBegin + bc * 4 + 1));
-		result256[bc * 8 + 4] = h.a;
-		result256[bc * 8 + 5] = h.b;
-		h = ByteToHexChar(*(resultBegin + bc * 4));
-		result256[bc * 8 + 6] = h.a;
-		result256[bc * 8 + 7] = h.b;
+		hexc = ByteToHexChar(*(resultBegin + bc * 4 + 3));
+		result256[bc * 8] = hexc.a;
+		result256[bc * 8 + 1] = hexc.b;
+		hexc = ByteToHexChar(*(resultBegin + bc * 4 + 2));
+		result256[bc * 8 + 2] = hexc.a;
+		result256[bc * 8 + 3] = hexc.b;
+		hexc = ByteToHexChar(*(resultBegin + bc * 4 + 1));
+		result256[bc * 8 + 4] = hexc.a;
+		result256[bc * 8 + 5] = hexc.b;
+		hexc = ByteToHexChar(*(resultBegin + bc * 4));
+		result256[bc * 8 + 6] = hexc.a;
+		result256[bc * 8 + 7] = hexc.b;
 	}
 	result256[64] = '\0';
-	h0 = temph0 = 0x6a09e667;
-	h1 = temph1 = 0xbb67ae85;
-	h2 = temph2 = 0x3c6ef372;
-	h3 = temph3 = 0xa54ff53a;
-	h4 = temph4 = 0x510e527f;
-	h5 = temph5 = 0x9b05688c;
-	h6 = temph6 = 0x1f83d9ab;
-	h7 = temph7 = 0x5be0cd19;
+	h[0] = temph[0] = 0x6a09e667;
+	h[1] = temph[1] = 0xbb67ae85;
+	h[2] = temph[2] = 0x3c6ef372;
+	h[3] = temph[3] = 0xa54ff53a;
+	h[4] = temph[4] = 0x510e527f;
+	h[5] = temph[5] = 0x9b05688c;
+	h[6] = temph[6] = 0x1f83d9ab;
+	h[7] = temph[7] = 0x5be0cd19;
 	return result256;
 }
-inline bit32 crs(bit32 original, int bits) {  //   4 Ö½ originalÑ­      bitsÎ»     Ø¸ Öµ
-	bits = bits % 32;
-	return (original>>bits|original<<32-bits);
-}
-
 
 void HashSingle64() {
-	chunk256[0] = chunk64[0]; //   64 Ö½Úµ   Ï¢   äµ½256 Ö½ 
-	chunk256[1] = chunk64[1]; // Ç°64 Ö½ Ö± Ó¸   
-	chunk256[2] = chunk64[2]; // Ñ­  Õ¹  
-	chunk256[3] = chunk64[3];
-	chunk256[4] = chunk64[4];
-	chunk256[5] = chunk64[5];
-	chunk256[6] = chunk64[6];
-	chunk256[7] = chunk64[7];
-	chunk256[8] = chunk64[8];
-	chunk256[9] = chunk64[9];
-	chunk256[10] = chunk64[10];
-	chunk256[11] = chunk64[11];
-	chunk256[12] = chunk64[12];
-	chunk256[13] = chunk64[13];
-	chunk256[14] = chunk64[14];
-	chunk256[15] = chunk64[15];
-	for (short j = 16; j < 64; j++) {  //Ñ­     4 Ö½ 
+	memcpy(chunk256, chunk64, 64);// ½«64×Ö½ÚµÄÏûÏ¢À©³äµ½256×Ö½Ú, Ç°64×Ö½ÚÖ±½Ó¸´ÖÆ
+	for (short j = 16; j < 64; j++) {  //Ñ­»·Ìî³ä4×Ö½Ú
 		s0 = chunk256[j - 15];
 		s1 = chunk256[j - 2];
 		s0 = ((s0 >> 7) | (s0 << 25)) ^ ((s0 >> 18) | (s0 << 14)) ^ (s0 >> 3);
 		s1 = ((s1 >> 17) | (s1 << 15)) ^ ((s1 >> 19) | (s1 << 13)) ^ (s1 >> 10);
 		chunk256[j] = s0 + s1 + chunk256[j - 16] + chunk256[j - 7];
 	}
-	//    Îª16     Ö½    äµ½64     Ö½ÚµÄ¹   
-	//    Îª       h0-h7Öµ Ä¹   
+	//ÒÔÉÏÎª16¸öËÄ×Ö½ÚÀ©³äµ½64¸öËÄ×Ö½ÚµÄ¹ý³Ì
+	//ÒÔÏÂÎª´¦Àí¼ÆËãh[0]-h[7]ÖµµÄ¹ý³Ì
 	for (short i = 0; i < 8; i++) {
 		ji = i * 8;
 		//                7          4         4            4          4            4          4              4      5       4      6
-		cacheFunc1 = temph7 + ((temph4>>6|temph4<<26)^(temph4>>11|temph4<<21)^(temph4>>25|temph4<<7)) + (temph4&temph5^~temph4&temph6) + h64[ji] + chunk256[ji];
-		temph3 += cacheFunc1;
+		cacheFunc1 = temph[7] + ((temph[4]>>6|temph[4]<<26)^(temph[4]>>11|temph[4]<<21)^(temph[4]>>25|temph[4]<<7)) + (temph[4]&temph[5]^~temph[4]&temph[6]) + h64[ji] + chunk256[ji];
+		temph[3] += cacheFunc1;
 		//   7                       0         0            0          0            0          0               0      1      0      2      1      2
-		temph7 = cacheFunc1 + ((temph0>>2|temph0<<30)^(temph0>>13|temph0<<19)^(temph0>>22|temph0<<10)) + (temph0&temph1^temph0&temph2^temph1&temph2);
+		temph[7] = cacheFunc1 + ((temph[0]>>2|temph[0]<<30)^(temph[0]>>13|temph[0]<<19)^(temph[0]>>22|temph[0]<<10)) + (temph[0]&temph[1]^temph[0]&temph[2]^temph[1]&temph[2]);
 		//                6          3         3            3          3            3          3              3      4       3      5
-		cacheFunc1 = temph6 + ((temph3>>6|temph3<<26)^(temph3>>11|temph3<<21)^(temph3>>25|temph3<<7)) + (temph3&temph4^~temph3&temph5) + h64[ji+1] + chunk256[ji+1];
-		temph2 += cacheFunc1;
+		cacheFunc1 = temph[6] + ((temph[3]>>6|temph[3]<<26)^(temph[3]>>11|temph[3]<<21)^(temph[3]>>25|temph[3]<<7)) + (temph[3]&temph[4]^~temph[3]&temph[5]) + h64[ji+1] + chunk256[ji+1];
+		temph[2] += cacheFunc1;
 		//   6                       7         7            7          7            7          7               7      0      7      1      0      1
-		temph6 = cacheFunc1 + ((temph7>>2|temph7<<30)^(temph7>>13|temph7<<19)^(temph7>>22|temph7<<10)) + (temph7&temph0^temph7&temph1^temph0&temph1);
+		temph[6] = cacheFunc1 + ((temph[7]>>2|temph[7]<<30)^(temph[7]>>13|temph[7]<<19)^(temph[7]>>22|temph[7]<<10)) + (temph[7]&temph[0]^temph[7]&temph[1]^temph[0]&temph[1]);
 		//                5          2         2            2          2            2          2              2      3       2      4
-		cacheFunc1 = temph5 + ((temph2>>6|temph2<<26)^(temph2>>11|temph2<<21)^(temph2>>25|temph2<<7)) + (temph2&temph3^~temph2&temph4) + h64[ji+2] + chunk256[ji+2];
-		temph1 += cacheFunc1;
+		cacheFunc1 = temph[5] + ((temph[2]>>6|temph[2]<<26)^(temph[2]>>11|temph[2]<<21)^(temph[2]>>25|temph[2]<<7)) + (temph[2]&temph[3]^~temph[2]&temph[4]) + h64[ji+2] + chunk256[ji+2];
+		temph[1] += cacheFunc1;
 		//   5                       6         6            6          6            6          6               6      7      6      0      7      0
-		temph5 = cacheFunc1 + ((temph6>>2|temph6<<30)^(temph6>>13|temph6<<19)^(temph6>>22|temph6<<10)) + (temph6&temph7^temph6&temph0^temph7&temph0);
+		temph[5] = cacheFunc1 + ((temph[6]>>2|temph[6]<<30)^(temph[6]>>13|temph[6]<<19)^(temph[6]>>22|temph[6]<<10)) + (temph[6]&temph[7]^temph[6]&temph[0]^temph[7]&temph[0]);
 		//                4          1         1            1          1            1          1              1      2       1      3
-		cacheFunc1 = temph4 + ((temph1>>6|temph1<<26)^(temph1>>11|temph1<<21)^(temph1>>25|temph1<<7)) + (temph1&temph2^~temph1&temph3) + h64[ji+3] + chunk256[ji+3];
-		temph0 += cacheFunc1;
+		cacheFunc1 = temph[4] + ((temph[1]>>6|temph[1]<<26)^(temph[1]>>11|temph[1]<<21)^(temph[1]>>25|temph[1]<<7)) + (temph[1]&temph[2]^~temph[1]&temph[3]) + h64[ji+3] + chunk256[ji+3];
+		temph[0] += cacheFunc1;
 		//   4                       5         5            5          5            5          5               5      6      5      7      6      7
-		temph4 = cacheFunc1 + ((temph5>>2|temph5<<30)^(temph5>>13|temph5<<19)^(temph5>>22|temph5<<10)) + (temph5&temph6^temph5&temph7^temph6&temph7);
+		temph[4] = cacheFunc1 + ((temph[5]>>2|temph[5]<<30)^(temph[5]>>13|temph[5]<<19)^(temph[5]>>22|temph[5]<<10)) + (temph[5]&temph[6]^temph[5]&temph[7]^temph[6]&temph[7]);
 		//                3          0         0            0          0            0          0              0      1       0      2
-		cacheFunc1 = temph3 + ((temph0>>6|temph0<<26)^(temph0>>11|temph0<<21)^(temph0>>25|temph0<<7)) + (temph0&temph1^~temph0&temph2) + h64[ji+4] + chunk256[ji+4];
-		temph7 += cacheFunc1;
+		cacheFunc1 = temph[3] + ((temph[0]>>6|temph[0]<<26)^(temph[0]>>11|temph[0]<<21)^(temph[0]>>25|temph[0]<<7)) + (temph[0]&temph[1]^~temph[0]&temph[2]) + h64[ji+4] + chunk256[ji+4];
+		temph[7] += cacheFunc1;
 		//   3                       4         4            4          4            4          4               4      5      4      6      5      6
-		temph3 = cacheFunc1 + ((temph4>>2|temph4<<30)^(temph4>>13|temph4<<19)^(temph4>>22|temph4<<10)) + (temph4&temph5^temph4&temph6^temph5&temph6);
+		temph[3] = cacheFunc1 + ((temph[4]>>2|temph[4]<<30)^(temph[4]>>13|temph[4]<<19)^(temph[4]>>22|temph[4]<<10)) + (temph[4]&temph[5]^temph[4]&temph[6]^temph[5]&temph[6]);
 		//                2          7         7            7          7            7          7              7      0       7      1
-		cacheFunc1 = temph2 + ((temph7>>6|temph7<<26)^(temph7>>11|temph7<<21)^(temph7>>25|temph7<<7)) + (temph7&temph0^~temph7&temph1) + h64[ji+5] + chunk256[ji+5];
-		temph6 += cacheFunc1;
+		cacheFunc1 = temph[2] + ((temph[7]>>6|temph[7]<<26)^(temph[7]>>11|temph[7]<<21)^(temph[7]>>25|temph[7]<<7)) + (temph[7]&temph[0]^~temph[7]&temph[1]) + h64[ji+5] + chunk256[ji+5];
+		temph[6] += cacheFunc1;
 		//   2                       3         3            3          3            3          3               3      4      3      5      4      5
-		temph2 = cacheFunc1 + ((temph3>>2|temph3<<30)^(temph3>>13|temph3<<19)^(temph3>>22|temph3<<10)) + (temph3&temph4^temph3&temph5^temph4&temph5);
+		temph[2] = cacheFunc1 + ((temph[3]>>2|temph[3]<<30)^(temph[3]>>13|temph[3]<<19)^(temph[3]>>22|temph[3]<<10)) + (temph[3]&temph[4]^temph[3]&temph[5]^temph[4]&temph[5]);
 		//                1          6         6            6          6            6          6              6             6       0
-		cacheFunc1 = temph1 + ((temph6>>6|temph6<<26)^(temph6>>11|temph6<<21)^(temph6>>25|temph6<<7)) + (temph6&temph7^~temph6&temph0) + h64[ji+6] + chunk256[ji+6];
-		temph5 += cacheFunc1;
+		cacheFunc1 = temph[1] + ((temph[6]>>6|temph[6]<<26)^(temph[6]>>11|temph[6]<<21)^(temph[6]>>25|temph[6]<<7)) + (temph[6]&temph[7]^~temph[6]&temph[0]) + h64[ji+6] + chunk256[ji+6];
+		temph[5] += cacheFunc1;
 		//   1                       2         2            2          2            2          2               2      3      2      4      3      4
-		temph1 = cacheFunc1 + ((temph2>>2|temph2<<30)^(temph2>>13|temph2<<19)^(temph2>>22|temph2<<10)) + (temph2&temph3^temph2&temph4^temph3&temph4);
+		temph[1] = cacheFunc1 + ((temph[2]>>2|temph[2]<<30)^(temph[2]>>13|temph[2]<<19)^(temph[2]>>22|temph[2]<<10)) + (temph[2]&temph[3]^temph[2]&temph[4]^temph[3]&temph[4]);
 		//                0          5         5            5          5            5          5              5      6       5      7
-		cacheFunc1 = temph0 + ((temph5>>6|temph5<<26)^(temph5>>11|temph5<<21)^(temph5>>25|temph5<<7)) + (temph5&temph6^~temph5&temph7) + h64[ji+7] + chunk256[ji+7];
-		temph4 += cacheFunc1;
+		cacheFunc1 = temph[0] + ((temph[5]>>6|temph[5]<<26)^(temph[5]>>11|temph[5]<<21)^(temph[5]>>25|temph[5]<<7)) + (temph[5]&temph[6]^~temph[5]&temph[7]) + h64[ji+7] + chunk256[ji+7];
+		temph[4] += cacheFunc1;
 		//   0                       1         1            1          1            1          1               1      2      1      3      2      3
-		temph0 = cacheFunc1 + ((temph1>>2|temph1<<30)^(temph1>>13|temph1<<19)^(temph1>>22|temph1<<10)) + (temph1&temph2^temph1&temph3^temph2&temph3);
+		temph[0] = cacheFunc1 + ((temph[1]>>2|temph[1]<<30)^(temph[1]>>13|temph[1]<<19)^(temph[1]>>22|temph[1]<<10)) + (temph[1]&temph[2]^temph[1]&temph[3]^temph[2]&temph[3]);
 	}
-	h0 += temph0;
-	h1 += temph1;
-	h2 += temph2;
-	h3 += temph3;
-	h4 += temph4;
-	h5 += temph5;
-	h6 += temph6;
-	h7 += temph7;
-	temph0 = h0;
-	temph1 = h1;
-	temph2 = h2;
-	temph3 = h3;
-	temph4 = h4;
-	temph5 = h5;
-	temph6 = h6;
-	temph7 = h7;
+	h[0] += temph[0];
+	h[1] += temph[1];
+	h[2] += temph[2];
+	h[3] += temph[3];
+	h[4] += temph[4];
+	h[5] += temph[5];
+	h[6] += temph[6];
+	h[7] += temph[7];
+	memcpy(temph, h, 32);
 }
 
-char* HashStr(const char* message, int algorithm, bit64 flaglengthb, bit64 flaglength) {  //                     Ú¼    Ä¼   Ï£Ê±   Ã±     Ê±Ê¹ Ãµ  
-	bit64 length = 0;               //isDebugÎªtrueÊ±    Ö´ Ð¹    Ð´ Ó¡  Ã¿   Ö½Ú¿ 
+char* HashStr(const char* message, int algorithm, bit64 flaglengthb, bit64 flaglength) {  //ÕâÀïµÄ×îºóÁ½¸ö²ÎÊýÊÇÓÃÓÚ¼ÆËãÎÄ¼þ¹þÏ£Ê±µ÷ÓÃ±¾º¯ÊýÊ±Ê¹ÓÃµÄ 
+	bit64 length = 0;
 	bit64 length8 = 0;              
-	bit64 howMany64 = 0;  // Ð¶  Ù¸   64 Ö½Ú¿ 
+	bit64 howMany64 = 0;  //ÓÐ¶àÉÙ¸öÕû64×Ö½Ú¿é
 	if (flaglengthb == 0) {
 		while (true) {
 			if (*(message + length) != '\0') {
@@ -206,49 +169,49 @@ char* HashStr(const char* message, int algorithm, bit64 flaglengthb, bit64 flagl
 	}
 
 
-	Byte* begin64 = (Byte*)chunk64;  //  chunk64     Ö½Ú²   
+	Byte* begin64 = (Byte*)chunk64;  //½«chunk64°´µ¥×Ö½Ú²Ù×÷
 	bit32* beginMsg = (bit32*)message;
 
 
-	//  Ð¡ Ë»       Ê¹Ã¿ Ä¸  Ö½Ú· ×ªÒ»  ---------------------------------------------Ð¡Ð¡Ð¡----------------------------------------------------
-	for (bit64 operate = 0; operate < howMany64; operate++) {  //Ç°         64 Ö½Ú¿é£¬Îª0Ê±  Ö´  
-		for (bit64 c = 0; c < 16; c++) {  //    64 Ö½Ú¿  È¡
-			*(begin64 + c * 4 + 3) = *(message + 64 * operate + c * 4);  //Ð¡  ÏµÍ³ Ðµ Î»  Åµ Î» Ö½Ú£   Îª  Òª Ô´ Ë· Ê½  È¡ Í´    Ö½Ú¿  Ðµ     
-			*(begin64 + c * 4 + 2) = *(message + 64 * operate + c * 4 + 1);  //      Ð¡  ÏµÍ³    Òª  Ö¤  Î»  Ö· Ðµ    Ý±   È¡    Î»
-			*(begin64 + c * 4 + 1) = *(message + 64 * operate + c * 4 + 2);  //     Ö½Ú¿   Ð´   Ö½ Ê±  Òª  4 Ö½  ÐµÄ¸ Î»   Ý·Åµ   Î»  Ö· æ´¢
+	//ÔÚÐ¡¶Ë»·¾³ÖÐÐèÊ¹Ã¿ËÄ¸ö×Ö½Ú·´×ªÒ»ÏÂ---------------------------------------------Ð¡Ð¡Ð¡----------------------------------------------------
+	for (bit64 operate = 0; operate < howMany64; operate++) {  //Ç°ÃæµÄÕûÊý´Î64×Ö½Ú¿é£¬Îª0Ê±²»Ö´ÐÐ
+		for (bit64 c = 0; c < 16; c++) {  //µ¥¸ö64×Ö½Ú¿é»ñÈ¡
+			*(begin64 + c * 4 + 3) = *(message + 64 * operate + c * 4);  //Ð¡¶ËÏµÍ³ÖÐµÍÎ»´æ·ÅµÍÎ»×Ö½Ú£¬ÒòÎªÐèÒªÒÔ´ó¶Ë·½Ê½¶ÁÈ¡ºÍ´¦Àí×Ö½Ú¿éÖÐµÄÄÚÈÝ
+			*(begin64 + c * 4 + 2) = *(message + 64 * operate + c * 4 + 1);  //ËùÒÔÔÚÐ¡¶ËÏµÍ³ÖÐÐèÒª±£Ö¤µÍÎ»µØÖ·ÖÐµÄÄÚÈÝ±»¶ÁÈ¡µ½¸ßÎ»
+			*(begin64 + c * 4 + 1) = *(message + 64 * operate + c * 4 + 2);  //ÔòÍù×Ö½Ú¿éÖÐÐ´Èë×Ö½ÚÊ±ÐèÒª½«4×Ö½ÚÖÐµÄ¸ßÎ»Êý¾Ý·Åµ½µÍÎ»µØÖ·´æ´¢
 			*(begin64 + c * 4) = *(message + 64 * operate + c * 4 + 3);
 		}
 
 		HashSingle64();
 
 	}
-	bit64 frontLength = 64 * howMany64;  //  È¡Ç°  n  64 Ö½Úµ  Ü³  È£      á¹©    Æ« Ã¶ È¡Ô­Ê¼  Ï¢ ÐµÄº  æ²»  64 Ö½Úµ     
-	bit64 surplus = length - frontLength;  //      æ²»  64 Ö½Ú²  ÖµÄ³   
-	bit64 surplus4 = surplus >> 2;  //  Îª  Ð¡  ÏµÍ³ Ð£   ÒªÃ¿ Ä¸  Ö½  Ä¸  Ö½ÚµÄ´       Ô» È¡Ò»   Ð¶  Ù¸   4 Ö½ 
-	bit64 surplusb = surplus - 4 * surplus4;  //nn     Ö½Úº  Ð¶  Ù¸  Ö½ 
+	bit64 frontLength = 64 * howMany64;  //»ñÈ¡Ç°Ãæn¸ö64×Ö½ÚµÄ×Ü³¤¶È£¬ÓÃÓÚÌá¹©»ù´¡Æ«ÖÃ¶ÁÈ¡Ô­Ê¼ÏûÏ¢ÖÐµÄºóÃæ²»×ã64×Ö½ÚµÄÄÚÈÝ
+	bit64 surplus = length - frontLength;  //¼ÆËãºóÃæ²»×ã64×Ö½Ú²¿·ÖµÄ³¤¶È
+	bit64 surplus4 = surplus >> 2;  //ÒòÎªÔÚÐ¡¶ËÏµÍ³ÖÐ£¬ÐèÒªÃ¿ËÄ¸ö×Ö½ÚËÄ¸ö×Ö½ÚµÄ´¦Àí£¬ËùÒÔ»ñÈ¡Ò»¹²ÓÐ¶àÉÙ¸öÕû4×Ö½Ú
+	bit64 surplusb = surplus - 4 * surplus4;  //nn¸öËÄ×Ö½Úºó»¹ÓÐ¶àÉÙ¸ö×Ö½Ú
 
-	if (surplus > 55 || surplus == 0) {  //Ê£    Ö½Ú·Å²   9   Ö½ Ê±(n==0Ê±      messageÎª64 Ö½Úµ           Ê±Ö»     0x80  8 Ö½Ú³   )
+	if (surplus > 55 || surplus == 0) {  //Ê£ÓàµÄ×Ö½Ú·Å²»ÏÂ9¸ö×Ö½ÚÊ±(n==0Ê±¼´Õû¸ömessageÎª64×Ö½ÚµÄÕûÊý±¶£¬´ËÊ±Ö»ÐèÌî³ä0x80ºÍ8×Ö½Ú³¤¶È)
 
-		if (surplus == 0) {  //    Îª64 Ö½       Ê±     Ò»  64 Ö½Ú¿é±»   0x8000000 0000...0000 length(8 bits)
+		if (surplus == 0) {  //³¤¶ÈÎª64×Ö½ÚÕûÊý±¶Ê±£¬×îºóÒ»¸ö64×Ö½Ú¿é±»Ìî³ä0x8000000 0000...0000 length(8 bits)
 			chunk64[0] = 0x80000000;
 			for (short i = 1; i < 14; i++) {
 				chunk64[i] = 0x00000000;
 			}
-			bit32* length4 = (bit32*)&length8;  //    8   Ö½ Îªmessage    
+			bit32* length4 = (bit32*)&length8;  //Ìî³äºó8¸ö×Ö½ÚÎªmessage³¤¶È
 			chunk64[15] = *length4;
 			chunk64[14] = *(length4 + 1);
 
 			HashSingle64();
 
 		}
-		else {  //  Îª55 < surplus < 64     
-			for (bit64 s = 0; s < surplus4; s++) {  //    64 Ö½Ú¿  È¡
+		else {  //´ËÎª55 < surplus < 64µÄÇé¿ö
+			for (bit64 s = 0; s < surplus4; s++) {  //µ¥¸ö64×Ö½Ú¿é»ñÈ¡
 				*(begin64 + s * 4 + 3) = *(message + frontLength + s * 4);
 				*(begin64 + s * 4 + 2) = *(message + frontLength + s * 4 + 1);
 				*(begin64 + s * 4 + 1) = *(message + frontLength + s * 4 + 2);
 				*(begin64 + s * 4) = *(message + frontLength + s * 4 + 3);
 			}
-			for (bit64 b = 0; b < surplusb; b++) {  //   Ê£  Ä· 4 Ö½        Ý£   0x80  0x00
+			for (bit64 b = 0; b < surplusb; b++) {  //Ìî³äÊ£ÓàµÄ·Ç4×Ö½ÚÕûµÄÊý¾Ý£¬¼°0x80ºÍ0x00
 				*(begin64 + surplus4 * 4 + 3 - b) = *(message + length - surplusb + b);
 			}
 			*(begin64 + surplus4 * 4 + 3 - surplusb) = 0x80;
@@ -261,10 +224,10 @@ char* HashStr(const char* message, int algorithm, bit64 flaglengthb, bit64 flagl
 
 			HashSingle64();
 
-			for (short i = 0; i < 14; i++) {  //   Ò»   Ö½Ú¿ Ç°  È«     0x00
+			for (short i = 0; i < 14; i++) {  //×îºóÒ»¸ö×Ö½Ú¿éÇ°ÃæÈ«²¿Ìî³ä0x00
 				chunk64[i] = 0x00000000;
 			}
-			bit32* length4 = (bit32*)&length8;  //    8   Ö½ Îªmessage    
+			bit32* length4 = (bit32*)&length8;  //Ìî³äºó8¸ö×Ö½ÚÎªmessage³¤¶È
 			chunk64[15] = *length4;
 			chunk64[14] = *(length4 + 1);
 
@@ -272,25 +235,25 @@ char* HashStr(const char* message, int algorithm, bit64 flaglengthb, bit64 flagl
 
 		}
 	}
-	else {  //  Îª0 < length < 55     
-		for (bit64 s = 0; s < surplus4; s++) {  //   Ç°  4*surplus4 Ö½ 
+	else {  //´ËÎª0 < length < 55µÄÇé¿ö
+		for (bit64 s = 0; s < surplus4; s++) {  //Ìî³äÇ°Ãæ4*surplus4×Ö½Ú
 			*(begin64 + s * 4 + 3) = *(message + frontLength + s * 4);
 			*(begin64 + s * 4 + 2) = *(message + frontLength + s * 4 + 1);
 			*(begin64 + s * 4 + 1) = *(message + frontLength + s * 4 + 2);
 			*(begin64 + s * 4) = *(message + frontLength + s * 4 + 3);
 		}
-		for (bit64 b = 0; b < surplusb; b++) {  //   Ê£ ÂµÄ²   4 Ö½Úµ    Ýº 0x00
+		for (bit64 b = 0; b < surplusb; b++) {  //Ìî³äÊ£ÏÂµÄ²»×ã4×Ö½ÚµÄÄÚÈÝºÍ0x00
 			*(begin64 + surplus4 * 4 + 3 - b) = *(message + length - surplusb + b);
 		}
 		*(begin64 + surplus4 * 4 + 3 - surplusb) = 0x80;
 		for (bit64 bl = 0; bl < 3 - surplusb; bl++) {
 			*(begin64 + surplus4 * 4 + 2 - surplusb - bl) = 0x00;
 		}
-		for (bit64 z = 4*(surplus4 + 1); z < 56; z++) {  //Ê£ Âµ    0x00
+		for (bit64 z = 4*(surplus4 + 1); z < 56; z++) {  //Ê£ÏÂµÄÌî³ä0x00
 			*(begin64 + z) = 0x00;
 		}
 
-		bit32* length4 = (bit32*)&length8;  //    8   Ö½ Îªmessage    
+		bit32* length4 = (bit32*)&length8;  //Ìî³äºó8¸ö×Ö½ÚÎªmessage³¤¶È
 		chunk64[15] = *length4;
 		chunk64[14] = *(length4 + 1);
 
@@ -304,23 +267,23 @@ char* HashStr(const char* message, int algorithm, bit64 flaglengthb, bit64 flagl
 
 char* HashFile(char* path, int algorithm) {
 	FILE* f = fopen(path, "rb");
-	fseek(f, 0, SEEK_END);
-	bit64 endP = ftell(f);
+	_fseeki64(f, 0, SEEK_END);
+	bit64 length = _ftelli64(f);
 	rewind(f);
-	//if (endP >> 61 != 0) {
-	//	std::cerr << "file is too big";
-	//	return nullptr;
-	//}
-	const bit64 howBig = 524288;
+	if (length >> 61 != 0) {
+		printf("file is too big\n");
+		return nullptr;
+	}
+	const bit64 howBig = 65536;
 	bit64 i4 = 0;
-	bit64 length = endP;  // Ä¼  Ü³   ( Ö½ )
-	bit64 howMany64 = length >> 6;  //64 Ö½Ú¿    
-	bit64 howMany64M = length / howBig;  //64MB Ð¶  Ù¸ 
+	bit64 howMany64 = length >> 6;  //64×Ö½Ú¿é¸öÊý
+	bit64 howMany64M = length / howBig;  //64MBÓÐ¶àÉÙ¸ö
 	bit64 surplus64k = howMany64 % (howBig/64);
-	bit64 length8 = length << 3;  //  Î»  (  Òª   Ä³     Ï¢)
-	bit64 surplus = length - 64 * howMany64;  //     64 Ö½  Ö½   
+	bit64 length8 = length << 3;  //×ÜÎ»Êý(ÐèÒªÌî³äµÄ³¤¶ÈÐÅÏ¢)
+	bit64 surplus = length - 64 * howMany64;  //×îºó²»×ã64×Ö½Ú×Ö½ÚÊý
 	if (surplus == 0) { howMany64--; }
 	Byte* begin64 = (Byte*)chunk64;
+	Byte* begin644 = (Byte*)chunk64;
 	char buff[64] = { 0 };
 
 	char* buffM = new char[howBig];
@@ -401,10 +364,10 @@ char* HashFile(char* path, int algorithm) {
 		cache1 = 64 * bk;
 		for (bit64 i = 0; i < 16; i++) {
 			i4 = i * 4;
-			*(begin64 + i4) = buffM[cache1 + i4 + 3];
-			*(begin64 + i4 + 1) = buffM[cache1 + i4 + 2];
-			*(begin64 + i4 + 2) = buffM[cache1 + i4 + 1];
-			*(begin64 + i4 + 3) = buffM[cache1 + i4];
+			*(begin644 + i4) = buffM[cache1 + i4 + 3];
+			*(begin644 + i4 + 1) = buffM[cache1 + i4 + 2];
+			*(begin644 + i4 + 2) = buffM[cache1 + i4 + 1];
+			*(begin644 + i4 + 3) = buffM[cache1 + i4];
 		}
 		HashSingle64();
 	}
@@ -412,10 +375,10 @@ char* HashFile(char* path, int algorithm) {
 		fread(buff, 1, 64, f);
 		fclose(f);
 		for (short i = 0; i < 16; i++) {
-			*(begin64 + i * 4) = buff[i * 4 + 3];
-			*(begin64 + i * 4 + 1) = buff[i * 4 + 2];
-			*(begin64 + i * 4 + 2) = buff[i * 4 + 1];
-			*(begin64 + i * 4 + 3) = buff[i * 4];
+			*(begin644 + i * 4) = buff[i * 4 + 3];
+			*(begin644 + i * 4 + 1) = buff[i * 4 + 2];
+			*(begin644 + i * 4 + 2) = buff[i * 4 + 1];
+			*(begin644 + i * 4 + 3) = buff[i * 4];
 		}
 
 		HashSingle64();
@@ -424,7 +387,7 @@ char* HashFile(char* path, int algorithm) {
 		for (short i = 1; i < 14; i++) {
 			chunk64[i] = 0x00000000;
 		}
-		bit32* length4 = (bit32*)&length8;  //    8   Ö½ Îªmessage    
+		bit32* length4 = (bit32*)&length8;  //Ìî³äºó8¸ö×Ö½ÚÎªmessage³¤¶È
 		chunk64[15] = *length4;
 		chunk64[14] = *(length4 + 1);
 
