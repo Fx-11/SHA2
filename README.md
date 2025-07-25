@@ -1,30 +1,69 @@
 # SHA2
-SHA2 hash algorithm implemented in C++
 
-使用C++实现的Sha256哈希算法，其中的"HashStr()"和"HashFile()"可分别计算字符串(默认编码格式)和一个文件的哈希值
-***example:***
-````
-#include "SHA2.h"
+---
+
+## *sha256*
+*使用C语言实现的SHA-256哈希算法，支持字符串和文件的哈希计算，并提供增量哈希接口处理大数据*
+#### 性能参考：
+条件：Windows11  AMD R9-7945HX(5.2GHz)   内存5.2Ghz双通道  g++O3编译
+未优化版：约340MB/s
+优化版：优化中...
+
+---
+#### 基础函数(C):
+- initialStat - 初始化哈希状态结构体
+- freeStat - 释放状态结构体内存
+- updataStat - 更新待哈希数据指针
+- preProcessStat - 预处理最后不完整的64字节数据块
+- hash256 - 计算单个64字节数据块
+- hashEnd256 - 计算末尾填充的数据块
+- autoHash256 - 自动计算所有完整数据块
+#### 便捷函数:
+- hashStr(C)/HashStr(C++) - 直接计算字符串的SHA-256哈希值
+- hashFile(C)/HashFile(C++) - 计算文件的SHA-256哈希值
+
+---
+#### *example:*
+***C++:***
+```
 #include <iostream>
-
+#include <string>
+#include "SHA2.h" //C++只需包含SHA2.h即可
 
 int main() {
-	char aString[] = "Hello World!";
-	std::cout << HashStr(aString) << std::endl;  // 7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069
-
-	char aPath[] = "D:\\example.png";
-	std::cout << HashFile(aPath) << std::endl;  // 9adf3eb60b463a62251cbc7a7e9e3be5e3f50b602b431322c982bec4a9027662
+	std::cout << HashStr("Hello World") << std::endl;
+	std::cout << HashFile("test.bin") << std::endl;
 
 	return 0;
 }
-````
-***
+```
+***C:***
+```
+#include <stdio.h>
+#include "sha256.h"
 
-那个名为"hash.py"的Python脚本可以随机生成一个测试字符串(还得是Python)
+int main() {
+	char hashVal[65]; // 自行准备内存用于存放字符串形式的哈希值
+	const char* testData = "ABCDEF";
+	bit64 length = 6;
 
-### 关于性能优化
 
-(水平暂时有限，仅供学习交流)
-目前在不开启编译器优化的情况下，1.7GB测试文件已经从最初的70s优化到了15s；
-开启O2优化，从最初的7s左右优化到目前的5.2s左右（CPU为R9-7945HX以5.2GHz运行）
-目前先这样了，什么时候有空再继续优化性能或做其他算法
+	hashStr("Hi sha256", hashVal, SHA256); // 字符串哈希
+	hashFile("anime.mkv", hashVal, SHA256); 	// 文件哈希
+
+
+	struct sha256Stat* state = (struct sha256Stat*)initialStat((bit8*)testData, length, SHA256);// 增量哈希, 结果存于结构体中的sha256数组，释放结构体内存前自行取出
+	updataStat(state, (bit8*)testData, length, SHA256);
+	preProcessStat(state, length, SHA256);
+	autoHash256(state);
+	hashEnd256(state);
+	freeStat(state);
+	//所有函数不进行内存检查，请自行管理内存
+
+	return 0;
+}
+```
+
+---
+## 其他哈希算法实现：
+有空再写...
